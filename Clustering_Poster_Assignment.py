@@ -145,7 +145,7 @@ def norm(array):
     scaled = (array-min_val) / (max_val-min_val)
     return scaled
 
-def norm_df(df, first=2, last=None):
+def norm_df(df, first=1, last=None):
     """ Returns all columns of the dataframe normalised to [0,1] with the exception of the first (containing the names) Calls function norm to do the normalisation of one column, but doing all in one function is also fine. First, last: columns from first to last (including) are normalised. Defaulted to all. None is the empty entry. The default corresponds"""
     # iterate over all numerical columns
     for col in df.columns[first:last]: # excluding the first column
@@ -197,42 +197,44 @@ df_agri_lands_norm = norm_df(df_agri_lands)
 df_urban_growth_norm = norm_df(df_urban_pop)
  
 #Calling our function to get a all factors for China into one dataframe
-df_china = countrywise_dataframe("China", df_population_t, df_Co2_liquid_t, df_Co2_solid_t, df_agri_lands_t, df_urban_pop_t, df_Co2_total_t, df_forest_area_t, df_ara_lands_t)
-df_china.drop(df.index[1:30], axis=0, inplace=True)
-#Converting the dataset values into numeric 
-df_china = df_china.apply(pd.to_numeric)
+# df_china = countrywise_dataframe("China", df_population_t, df_Co2_liquid_t, df_Co2_solid_t, df_agri_lands_t, df_urban_pop_t, df_Co2_total_t, df_forest_area_t, df_ara_lands_t)
+# df_china.drop(df.index[1:30], axis=0, inplace=True)
+# #Converting the dataset values into numeric 
+# df_china = df_china.apply(pd.to_numeric)
 
-#Plotting a scatter matrix for better reference
-pd.plotting.scatter_matrix(df_china, figsize=(9.0, 9.0))
-plt.tight_layout() # helps to avoid overlap of labels
-plt.show()
+# #Plotting a scatter matrix for better reference
+# pd.plotting.scatter_matrix(df_china, figsize=(9.0, 9.0))
+# plt.tight_layout() # helps to avoid overlap of labels
+# plt.show()
 
-#Normalising the values particularly for forest area per population 
-df_china_norm = df_china.copy() 
-ss = StandardScaler()
-df_china_norm = ss.fit_transform(df_china_norm)
+# #Normalising the values particularly for forest area per population 
+# df_china_norm = df_china.copy() 
+# ss = StandardScaler()
+# df_china_norm = ss.fit_transform(df_china_norm)
 
 for ic in range(2, 7):
-# set up kmeans and fit
+    # set up kmeans and fit
     kmeans = cluster.KMeans(n_clusters=ic)
-    kmeans.fit(df_china_norm)
-# extract labels and calculate silhoutte score
+    kmeans.fit(df_pop_norm)
+    # extract labels and calculate silhoutte score
     labels = kmeans.labels_
-    print (ic, skmet.silhouette_score(df_china_norm, labels))
+    print (ic, skmet.silhouette_score(df_pop_norm, labels))
 
+#Output from the silhouette score is clusters number = 2 and clusters number = 3 would be the best 
 kmeans = cluster.KMeans(n_clusters=2)
-clusters = kmeans.fit(df_china_norm)
+clusters = kmeans.fit(df_pop_norm)
 # extract labels and cluster centres
 labels = kmeans.labels_
-df_china['Cluster'] = kmeans.labels_
+df_population['Cluster'] = kmeans.labels_
 cen = kmeans.cluster_centers_
 print(cen)
 
+print(df_population)
 
 plt.figure(figsize=(6.0, 6.0))
 # Individual colours can be assigned to symbols. The label l is used to the select the
-# l-th number from the colour table.
-plt.scatter(df_china['Population'], df_china['Co2_Total'], c=labels, s=50)
+# l-th number from the colour table.z
+plt.scatter(df_population['1960'], df_population['2000'], c=labels, s=50)
 # colour map Accent selected to increase contrast between colours
     
 plt.xlabel("Population")
@@ -263,14 +265,17 @@ plt.show()
 # Creating a simple model with curve fit 
 #Selecting the unites states dataset
 df_usa = countrywise_dataframe("United States", df_population_t, df_Co2_liquid_t, df_Co2_solid_t, df_agri_lands_t, df_urban_pop_t, df_Co2_total_t, df_forest_area_t, df_ara_lands_t)
+#Adding the year into the dataframe
 df_usa['Year'] = df_population_t['Year']
+#Creating a new data column for the relationship between population and arable lands
 df_usa['Pop per arable lands'] = df_usa['Population']/df_usa['Arable Lands']
+#Dropping all the zero values
 df_usa = df_usa[(df_usa[['Year','Pop per arable lands']] != 0).all(axis=1)]
-print(df_usa)
+#Converting the selected data columns in integer since np.exp expects integers
 df_usa = df_usa.astype({"Year":"int","Pop per arable lands":"int"})
+#
 popt, covar = opt.curve_fit(exponential, df_usa["Year"], df_usa["Pop per arable lands"]) 
 sigma_exp = np.sqrt(np.diag(covar))
-print("Fit parameter", popt)
 df_usa["pop_exp"] = exponential(df_usa["Year"], *popt)
 plt.figure()
 plt.plot(df_usa["Year"], df_usa["Pop per arable lands"], label="data")
@@ -292,7 +297,6 @@ plt.title("Improved start value")
 plt.show()
 
 popt, covar = opt.curve_fit(exponential, df_usa["Year"], df_usa["Pop per arable lands"], p0=[9314169.966403, 0.01]) 
-print("Fit parameter", popt)
 df_usa["pop_exp"] = exponential(df_usa["Year"], *popt)
 plt.figure()
 plt.plot(df_usa["Year"], df_usa["Pop per arable lands"], label="data")
@@ -325,10 +329,6 @@ for p in pmix:
     lower = np.minimum(lower, y)
     upper = np.maximum(upper, y)
 
-print("lower")
-print(lower)
-print("upper")
-print(upper)
 
 plt.figure()
 plt.plot(df_usa["Year"], df_usa["Pop per arable lands"], label="Data")
