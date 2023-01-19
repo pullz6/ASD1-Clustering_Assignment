@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 import scipy.optimize as opt
 import sklearn.cluster as cluster
 import sklearn.metrics as skmet
-from sklearn.preprocessing import StandardScaler
 import itertools as iter
 
 #Defining the functions to be used
@@ -72,17 +71,6 @@ def return_year_df(year, df):
     #Return the list 
     return year_list
 
-def return_mean_per_factor(df):
-    """"This function returns a mean of every year in the dataset for a particular factor's dataframe"""
-    #Create empty dataframe
-    df_mean = pd.DataFrame()
-    #Drop the columns that are not years
-    df.drop(df.iloc[:, 0:5], inplace=True, axis=1)
-    #Extract the mean from the .describe function's output
-    df_mean = df.describe(include='all').loc['mean']
-    #Return means
-    return df_mean
-
 def countrywise_dataframe (country, df_pop_total, df_Co2_liq, df_Co2_solid, df_agri_land, df_urban_population, df_Co2_total, df_forest_area, df_arable_lands): 
     """"This function returns a dataframe consisting of all the yearly values for each selected factor related to a particular country"""
     #Create empty dataframe       
@@ -137,7 +125,7 @@ def countrywise_dataframe (country, df_pop_total, df_Co2_liq, df_Co2_solid, df_a
     df = df[(df[['Population','CO2_Liquid','CO2_Solid','Agri_land','Urban Population']] != 0).all(axis=1)]
     #Return the dataframe
     return df
-
+    
 def norm(array):
     """"eturns array normalised to [0,1]. Array can be a numpy array or a column of a dataframe"""
     min_val = np.min(array)
@@ -190,76 +178,130 @@ df_pop_growth = cleaning_df(df_pop_growth)
 df_urban_pop = cleaning_df(df_urban_pop)
 
 #Creating the normalised version of each of the factors 
-df_pop_norm = norm_df(df_population)
+df_pop_norm = df_population.copy()
+df_pop_norm = norm_df(df_pop_norm)
 df_co2_tot_norm = norm_df(df_Co2_total)
 df_forest_area_norm = norm_df(df_forest_area)
 df_agri_lands_norm = norm_df(df_agri_lands)
 df_urban_growth_norm = norm_df(df_urban_pop)
- 
-#Calling our function to get a all factors for China into one dataframe
-# df_china = countrywise_dataframe("China", df_population_t, df_Co2_liquid_t, df_Co2_solid_t, df_agri_lands_t, df_urban_pop_t, df_Co2_total_t, df_forest_area_t, df_ara_lands_t)
-# df_china.drop(df.index[1:30], axis=0, inplace=True)
-# #Converting the dataset values into numeric 
-# df_china = df_china.apply(pd.to_numeric)
 
-# #Plotting a scatter matrix for better reference
-# pd.plotting.scatter_matrix(df_china, figsize=(9.0, 9.0))
-# plt.tight_layout() # helps to avoid overlap of labels
-# plt.show()
-
-# #Normalising the values particularly for forest area per population 
-# df_china_norm = df_china.copy() 
-# ss = StandardScaler()
-# df_china_norm = ss.fit_transform(df_china_norm)
+#Creating a dataframe to contain all the facotrs for all counties in 1960 so we can understand which clusters lie with
+df_1960 = pd.DataFrame()
+df_1960['Population'] = df_pop_norm['1960']
+df_1960['Co2 Total'] = df_co2_tot_norm['1960']
+df_1960['Forest Area'] = df_forest_area_norm['1960']
+df_1960['Agriculatural Lands'] = df_agri_lands_norm['1960']
+df_1960['Urban growth'] = df_urban_growth_norm['1960']
 
 for ic in range(2, 7):
     # set up kmeans and fit
     kmeans = cluster.KMeans(n_clusters=ic)
-    kmeans.fit(df_pop_norm)
+    kmeans.fit(df_1960)
     # extract labels and calculate silhoutte score
     labels = kmeans.labels_
-    print (ic, skmet.silhouette_score(df_pop_norm, labels))
+    print (ic, skmet.silhouette_score(df_1960, labels))
 
 #Output from the silhouette score is clusters number = 2 and clusters number = 3 would be the best 
+#For cluster number = 2
 kmeans = cluster.KMeans(n_clusters=2)
-clusters = kmeans.fit(df_pop_norm)
+clusters = kmeans.fit(df_1960)
 # extract labels and cluster centres
 labels = kmeans.labels_
 df_population['Cluster'] = kmeans.labels_
 cen = kmeans.cluster_centers_
-print(cen)
 
-print(df_population)
-
-plt.figure(figsize=(6.0, 6.0))
-# Individual colours can be assigned to symbols. The label l is used to the select the
-# l-th number from the colour table.z
-plt.scatter(df_population['1960'], df_population['2000'], c=labels, s=50)
+plt.figure()
+plt.scatter(df_1960['Population'],df_1960['Urban growth'], c=labels, s=50)
+plt.scatter(cen[:, 0], cen[:, 1], s=200, c='black')
+#plt.plot(5.01900000e+03, 3.30566808e-02, marker="o", markersize=5, markeredgecolor="red", markerfacecolor="green")
+#plt.plot(ypoints[0], ypoints[1], marker="o", markersize=20, markeredgecolor="red", markerfacecolor="blue")
 # colour map Accent selected to increase contrast between colours
+plt.colorbar()
     
-plt.xlabel("Population")
-plt.ylabel("Urban Population")
+plt.xlabel("Population in 1960")
+plt.ylabel("Urban Growth in 1960")
 plt.title("2 clusters")
 plt.show()
 
+#For cluster number = 3
+kmeans = cluster.KMeans(n_clusters=3)
+clusters = kmeans.fit(df_1960)
+# extract labels and cluster centres
+labels = kmeans.labels_
+df_1960['Cluster'] = kmeans.labels_
+cen = kmeans.cluster_centers_
 
+plt.figure()
+plt.scatter(df_1960['Population'],df_1960['Urban growth'], c=labels, s=50)
+plt.scatter(cen[:, 0], cen[:, 1], s=200, c='black')
+#plt.plot(5.01900000e+03, 3.30566808e-02, marker="o", markersize=5, markeredgecolor="red", markerfacecolor="green")
+#plt.plot(ypoints[0], ypoints[1], marker="o", markersize=20, markeredgecolor="red", markerfacecolor="blue")
+# colour map Accent selected to increase contrast between colours
+plt.colorbar()
+    
+plt.xlabel("Population in 1960")
+plt.ylabel("Urban Growth in 1960")
+plt.title("3 clusters")
+plt.show()
 
-# kmeans = cluster.KMeans(n_clusters=4)
-# kmeans.fit(df_urban_growth_norm)
-# # extract labels and cluster centres
-# labels = kmeans.labels_
-# cen = kmeans.cluster_centers_
-# plt.figure(figsize=(6.0, 6.0))
-# # Individual colours can be assigned to symbols. The label l is used to the select the
-# # l-th number from the colour table.
-# plt.scatter(df_urban_growth_norm["1990"], df_urban_growth_norm["2000"], c=labels, cmap="Accent")
-# # colour map Accent selected to increase contrast between colours
-# plt.xlabel("1990")
-# plt.ylabel("2000")
-# plt.title("4 clusters")
-# plt.show()
+#Creating a dataframe to contain all the facotrs for all counties in 2000 so we can understand which clusters lie with
+df_2000 = pd.DataFrame()
+df_2000['Population'] = df_pop_norm['2000']
+df_2000['Co2 Total'] = df_co2_tot_norm['2000']
+df_2000['Forest Area'] = df_forest_area_norm['2000']
+df_2000['Agriculatural Lands'] = df_agri_lands_norm['2000']
+df_2000['Urban growth'] = df_urban_growth_norm['2000']
 
+for ic in range(2, 7):
+    # set up kmeans and fit
+    kmeans = cluster.KMeans(n_clusters=ic)
+    kmeans.fit(df_2000)
+    # extract labels and calculate silhoutte score
+    labels = kmeans.labels_
+    print (ic, skmet.silhouette_score(df_2000, labels))
 
+#Output from the silhouette score is clusters number = 2 and clusters number = 3 would be the best 
+#For cluster number = 2
+kmeans = cluster.KMeans(n_clusters=2)
+clusters = kmeans.fit(df_2000)
+# extract labels and cluster centres
+labels = kmeans.labels_
+df_population['Cluster'] = kmeans.labels_
+cen = kmeans.cluster_centers_
+
+plt.figure()
+plt.scatter(df_2000['Population'],df_2000['Urban growth'], c=labels, s=50)
+plt.scatter(cen[:, 0], cen[:, 1], s=200, c='black')
+#plt.plot(5.01900000e+03, 3.30566808e-02, marker="o", markersize=5, markeredgecolor="red", markerfacecolor="green")
+#plt.plot(ypoints[0], ypoints[1], marker="o", markersize=20, markeredgecolor="red", markerfacecolor="blue")
+# colour map Accent selected to increase contrast between colours
+plt.colorbar()
+    
+plt.xlabel("Population in 2000")
+plt.ylabel("Urban Growth in 2000")
+plt.title("2 clusters")
+plt.show()
+
+#For cluster number = 3
+kmeans = cluster.KMeans(n_clusters=3)
+clusters = kmeans.fit(df_2000)
+# extract labels and cluster centres
+labels = kmeans.labels_
+df_1960['Cluster'] = kmeans.labels_
+cen = kmeans.cluster_centers_
+
+plt.figure()
+plt.scatter(df_2000['Population'],df_2000['Urban growth'], c=labels, s=50)
+plt.scatter(cen[:, 0], cen[:, 1], s=200, c='black')
+#plt.plot(5.01900000e+03, 3.30566808e-02, marker="o", markersize=5, markeredgecolor="red", markerfacecolor="green")
+#plt.plot(ypoints[0], ypoints[1], marker="o", markersize=20, markeredgecolor="red", markerfacecolor="blue")
+# colour map Accent selected to increase contrast between colours
+plt.colorbar()
+    
+plt.xlabel("Population in 2000")
+plt.ylabel("Urban Growth in 2000")
+plt.title("3 clusters")
+plt.show()
 
 # =============================================================================
 # Creating a simple model with curve fit 
