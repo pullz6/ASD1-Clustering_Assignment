@@ -14,6 +14,7 @@ import scipy.optimize as opt
 import sklearn.cluster as cluster
 import sklearn.metrics as skmet
 import itertools as iter
+import seaborn as sns
 
 #Defining the functions to be used
 
@@ -147,6 +148,7 @@ def cleaning_df(df):
     return df 
 
 def exponential(t, n0, g):
+    """"This function returns a exponential values"""
     t = t - 1960.0
     f = n0 * np.exp(g*t)
     return f
@@ -180,12 +182,24 @@ df_urban_pop = cleaning_df(df_urban_pop)
 #Creating the normalised version of each of the factors 
 df_pop_norm = df_population.copy()
 df_pop_norm = norm_df(df_pop_norm)
-df_co2_tot_norm = norm_df(df_Co2_total)
-df_forest_area_norm = norm_df(df_forest_area)
+df_co2_tot_norm = df_Co2_total.copy()
+df_co2_tot_norm = norm_df(df_co2_tot_norm)
+df_forest_area_norm = df_forest_area.copy()
+df_forest_area_norm = norm_df(df_forest_area_norm)
+df_agri_lands_norm = df_agri_lands.copy()
 df_agri_lands_norm = norm_df(df_agri_lands)
+df_urban_growth_norm = df_urban_pop.copy()
 df_urban_growth_norm = norm_df(df_urban_pop)
 
-#Creating a dataframe to contain all the facotrs for all counties in 1960 so we can understand which clusters lie with
+#Creating an original dataframe to contain all the  facotrs for all counties in 1960 so we can understand which clusters lie with
+df_1960_org = pd.DataFrame()
+df_1960_org['Population'] = df_population['1960']
+df_1960_org['Co2 Total'] = df_Co2_total['1960']
+df_1960_org['Forest Area'] = df_forest_area['1960']
+df_1960_org['Agriculatural Lands'] = df_agri_lands['1960']
+df_1960_org['Urban growth'] = df_urban_pop['1960']
+
+#Creating a dataframe to contain all the normalised facotrs for all counties in 1960 so we can understand which clusters lie with
 df_1960 = pd.DataFrame()
 df_1960['Population'] = df_pop_norm['1960']
 df_1960['Co2 Total'] = df_co2_tot_norm['1960']
@@ -207,20 +221,30 @@ kmeans = cluster.KMeans(n_clusters=2)
 clusters = kmeans.fit(df_1960)
 # extract labels and cluster centres
 labels = kmeans.labels_
-df_population['Cluster'] = kmeans.labels_
+df_1960_org['Cluster'] = kmeans.labels_
+df_1960['Cluster'] = kmeans.labels_
 cen = kmeans.cluster_centers_
 
+#Figure for the clusters with origanl data 
 plt.figure()
-plt.scatter(df_1960['Population'],df_1960['Urban growth'], c=labels, s=50)
+plt.scatter(df_1960_org['Population'],df_1960_org['Co2 Total'], c=labels, s=50)
 plt.scatter(cen[:, 0], cen[:, 1], s=200, c='black')
-#plt.plot(5.01900000e+03, 3.30566808e-02, marker="o", markersize=5, markeredgecolor="red", markerfacecolor="green")
-#plt.plot(ypoints[0], ypoints[1], marker="o", markersize=20, markeredgecolor="red", markerfacecolor="blue")
+# colour map Accent selected to increase contrast between colours
+plt.colorbar()  
+plt.xlabel("Population in 1960")
+plt.ylabel("Total CO2 Emissions in 1960")
+plt.title("2 clusters | 1960 | Original")
+plt.show()
+
+#Figure for the clusters with normalised data
+plt.figure()
+plt.scatter(df_1960['Population'],df_1960['Co2 Total'], c=labels, s=50)
+plt.scatter(cen[:, 0], cen[:, 1], s=200, c='black')
 # colour map Accent selected to increase contrast between colours
 plt.colorbar()
-    
 plt.xlabel("Population in 1960")
-plt.ylabel("Urban Growth in 1960")
-plt.title("2 clusters")
+plt.ylabel("Total CO2 Emissions in 1960")
+plt.title("2 clusters | 1960 | Normalised")
 plt.show()
 
 #For cluster number = 3
@@ -228,23 +252,42 @@ kmeans = cluster.KMeans(n_clusters=3)
 clusters = kmeans.fit(df_1960)
 # extract labels and cluster centres
 labels = kmeans.labels_
+#Assinging the centers to the originl and normalised database
+df_1960_org['Cluster'] = kmeans.labels_
 df_1960['Cluster'] = kmeans.labels_
 cen = kmeans.cluster_centers_
 
+#Figure for the clusters with origanl data
+plt.figure()
+plt.scatter(df_1960_org['Population'],df_1960_org['Urban growth'], c=labels, s=50)
+plt.scatter(cen[:, 0], cen[:, 1], s=200, c='black')
+# colour map Accent selected to increase contrast between colours
+plt.colorbar()
+plt.xlabel("Population in 1960")
+plt.ylabel("Total CO2 Emissions in 1960")
+plt.title("3 clusters | 1960 | Original")
+plt.show()
+
+#Figure for the clusters with normalised data
 plt.figure()
 plt.scatter(df_1960['Population'],df_1960['Urban growth'], c=labels, s=50)
 plt.scatter(cen[:, 0], cen[:, 1], s=200, c='black')
-#plt.plot(5.01900000e+03, 3.30566808e-02, marker="o", markersize=5, markeredgecolor="red", markerfacecolor="green")
-#plt.plot(ypoints[0], ypoints[1], marker="o", markersize=20, markeredgecolor="red", markerfacecolor="blue")
 # colour map Accent selected to increase contrast between colours
 plt.colorbar()
-    
 plt.xlabel("Population in 1960")
-plt.ylabel("Urban Growth in 1960")
-plt.title("3 clusters")
+plt.ylabel("Total CO2 Emissions in 1960")
+plt.title("3 clusters | 1960 | Normalised")
 plt.show()
 
-#Creating a dataframe to contain all the facotrs for all counties in 2000 so we can understand which clusters lie with
+#Creating an origrinal  dataframe to contain all the facotrs for all counties in 2000 so we can understand which clusters lie with
+df_2000_org = pd.DataFrame()
+df_2000_org['Population'] = df_population['2000']
+df_2000_org['Co2 Total'] = df_Co2_total['2000']
+df_2000_org['Forest Area'] = df_forest_area['2000']
+df_2000_org['Agriculatural Lands'] = df_agri_lands['2000']
+df_2000_org['Urban growth'] = df_urban_pop['2000']
+
+#Creating a dataframe to contain all the normalised facotrs for all counties in 2000 so we can understand which clusters lie with
 df_2000 = pd.DataFrame()
 df_2000['Population'] = df_pop_norm['2000']
 df_2000['Co2 Total'] = df_co2_tot_norm['2000']
@@ -266,20 +309,31 @@ kmeans = cluster.KMeans(n_clusters=2)
 clusters = kmeans.fit(df_2000)
 # extract labels and cluster centres
 labels = kmeans.labels_
-df_population['Cluster'] = kmeans.labels_
+#Assinging the centers to the originl and normalised database
+df_2000_org['Cluster'] = kmeans.labels_
+df_2000['Cluster'] = kmeans.labels_
 cen = kmeans.cluster_centers_
 
+#Figure for the clusters with original data
 plt.figure()
-plt.scatter(df_2000['Population'],df_2000['Urban growth'], c=labels, s=50)
+plt.scatter(df_2000_org['Population'],df_2000_org['Co2 Total'], c=labels, s=50)
 plt.scatter(cen[:, 0], cen[:, 1], s=200, c='black')
-#plt.plot(5.01900000e+03, 3.30566808e-02, marker="o", markersize=5, markeredgecolor="red", markerfacecolor="green")
-#plt.plot(ypoints[0], ypoints[1], marker="o", markersize=20, markeredgecolor="red", markerfacecolor="blue")
 # colour map Accent selected to increase contrast between colours
 plt.colorbar()
-    
 plt.xlabel("Population in 2000")
-plt.ylabel("Urban Growth in 2000")
-plt.title("2 clusters")
+plt.ylabel("Total CO2 Emissions in 2000")
+plt.title("2 clusters | 2000 | Original")
+plt.show()
+
+#Figure for the clusters with normalised data
+plt.figure()
+plt.scatter(df_2000['Population'],df_2000['Co2 Total'], c=labels, s=50)
+plt.scatter(cen[:, 0], cen[:, 1], s=200, c='black')
+# colour map Accent selected to increase contrast between colours
+plt.colorbar()
+plt.xlabel("Population in 2000")
+plt.ylabel("Total CO2 Emissions in 2000")
+plt.title("2 clusters | 2000 | Normalised")
 plt.show()
 
 #For cluster number = 3
@@ -287,22 +341,53 @@ kmeans = cluster.KMeans(n_clusters=3)
 clusters = kmeans.fit(df_2000)
 # extract labels and cluster centres
 labels = kmeans.labels_
-df_1960['Cluster'] = kmeans.labels_
+#Assinging the centers to the originl and normalised database
+df_2000_org['Cluster'] = kmeans.labels_
+df_2000['Cluster'] = kmeans.labels_
 cen = kmeans.cluster_centers_
 
+#Figure for the clusters with origanl data
+plt.figure()
+plt.scatter(df_2000_org['Population'],df_2000_org['Urban growth'], c=labels, s=50)
+plt.scatter(cen[:, 0], cen[:, 1], s=200, c='black')
+# colour map Accent selected to increase contrast between colours
+plt.colorbar()
+plt.xlabel("Population in 2000")
+plt.ylabel("Total CO2 Emissions in 2000")
+plt.title("3 clusters | 2000 | Original")
+plt.show()
+
+#Figure for the clusters with normalised data
 plt.figure()
 plt.scatter(df_2000['Population'],df_2000['Urban growth'], c=labels, s=50)
 plt.scatter(cen[:, 0], cen[:, 1], s=200, c='black')
-#plt.plot(5.01900000e+03, 3.30566808e-02, marker="o", markersize=5, markeredgecolor="red", markerfacecolor="green")
-#plt.plot(ypoints[0], ypoints[1], marker="o", markersize=20, markeredgecolor="red", markerfacecolor="blue")
 # colour map Accent selected to increase contrast between colours
 plt.colorbar()
-    
 plt.xlabel("Population in 2000")
-plt.ylabel("Urban Growth in 2000")
-plt.title("3 clusters")
+plt.ylabel("Total CO2 Emissions in 2000")
+plt.title("3 clusters | 2000 | Normalised")
 plt.show()
 
+#Lets analyse each of the clusters for both years 
+#Plotting a figure to understand statistics assoicated with each clusters particularly around full time and away and home goals. 
+fig,ax=plt.subplots(1,3,figsize=(12,5))
+sns.heatmap(df_1960.loc[df_1960_org.Cluster==0,['Population', 'Urban growth']].describe().round(),annot=True,fmt='g',ax=ax[0])
+ax[0].set_title("Cluster-0")
+sns.heatmap(df_1960.loc[df_1960_org.Cluster==1,['Population', 'Urban growth']].describe().round(),annot=True,fmt='g',ax=ax[1])
+ax[1].set_title("Cluster-1")
+sns.heatmap(df_1960.loc[df_1960_org.Cluster==2,['Population', 'Urban growth']].describe().round(),annot=True,fmt='g',ax=ax[2])
+ax[2].set_title("Cluster-2")
+plt.suptitle("Cluster Analysis | 1960")
+plt.show()
+fig,ax=plt.subplots(1,3,figsize=(12,5))
+sns.heatmap(df_2000.loc[df_2000_org.Cluster==0,['Population', 'Urban growth']].describe().round(),annot=True,fmt='g',ax=ax[0])
+ax[0].set_title("Cluster-0")
+sns.heatmap(df_2000.loc[df_2000_org.Cluster==1,['Population', 'Urban growth']].describe().round(),annot=True,fmt='g',ax=ax[1])
+ax[1].set_title("Cluster-1")
+sns.heatmap(df_2000.loc[df_2000_org.Cluster==2,['Population', 'Urban growth']].describe().round(),annot=True,fmt='g',ax=ax[2])
+ax[2].set_title("Cluster-2")
+plt.suptitle("Cluster Analysis | 2000")
+plt.show()
 # =============================================================================
 # Creating a simple model with curve fit 
 #Selecting the unites states dataset
@@ -315,7 +400,7 @@ df_usa['Pop per arable lands'] = df_usa['Population']/df_usa['Arable Lands']
 df_usa = df_usa[(df_usa[['Year','Pop per arable lands']] != 0).all(axis=1)]
 #Converting the selected data columns in integer since np.exp expects integers
 df_usa = df_usa.astype({"Year":"int","Pop per arable lands":"int"})
-#
+#fitting our data into curve fit and plotting the inital fit
 popt, covar = opt.curve_fit(exponential, df_usa["Year"], df_usa["Pop per arable lands"]) 
 sigma_exp = np.sqrt(np.diag(covar))
 df_usa["pop_exp"] = exponential(df_usa["Year"], *popt)
@@ -327,6 +412,8 @@ plt.title("First fit attempt")
 plt.xlabel("Year")
 plt.ylabel("Population per Arable Land")
 plt.show()
+
+#Assuming a value and using that as the start point
 popt = [9314169.966403, 0.01]
 df_usa["pop_exp"] = exponential(df_usa["Year"], *popt)
 plt.figure()
@@ -338,6 +425,7 @@ plt.ylabel("Population per Arable Land")
 plt.title("Improved start value")
 plt.show()
 
+#Using the improved start point for curve fit
 popt, covar = opt.curve_fit(exponential, df_usa["Year"], df_usa["Pop per arable lands"], p0=[9314169.966403, 0.01]) 
 df_usa["pop_exp"] = exponential(df_usa["Year"], *popt)
 plt.figure()
@@ -349,15 +437,16 @@ plt.xlabel("Year")
 plt.ylabel("Population per Arable Land")
 plt.show()
 
+#Choosing a few years to predict
 years_to_pred = np.arange(1961, 2033)
+#Getting the exponential of that
 pred_exp = exponential(years_to_pred, *popt)
 
 #Calculating the upper and lower ranges 
-#lower_limit, upper_limit = err_ranges(years_to_pred, exponential, popt, sigma_exp)
-#def err_ranges(x, func, param, sigma)
+#Including the provided function inline to give the uper and lower limits 
 lower = exponential(df_usa["Year"], *popt)
 upper = lower
-uplow = []   # list to hold upper and lower limits for parameters
+uplow = []
 zipped = zip(popt, sigma_exp)
 for p,s in zipped:
     pmin = p - s
@@ -371,7 +460,7 @@ for p in pmix:
     lower = np.minimum(lower, y)
     upper = np.maximum(upper, y)
 
-
+#Plotting the figure predicted value and original data as well as the confidence range. 
 plt.figure()
 plt.plot(df_usa["Year"], df_usa["Pop per arable lands"], label="Data")
 plt.plot(years_to_pred, pred_exp, label="Predicted Line" , color = "yellow")
