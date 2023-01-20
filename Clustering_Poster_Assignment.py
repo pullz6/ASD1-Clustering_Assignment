@@ -348,7 +348,7 @@ cen = kmeans.cluster_centers_
 
 #Figure for the clusters with origanl data
 plt.figure()
-plt.scatter(df_2000_org['Population'],df_2000_org['Urban growth'], c=labels, s=50)
+plt.scatter(df_2000_org['Population'],df_2000_org['Co2 Total'], c=labels, s=50)
 plt.scatter(cen[:, 0], cen[:, 1], s=200, c='black')
 # colour map Accent selected to increase contrast between colours
 plt.colorbar()
@@ -359,7 +359,7 @@ plt.show()
 
 #Figure for the clusters with normalised data
 plt.figure()
-plt.scatter(df_2000['Population'],df_2000['Urban growth'], c=labels, s=50)
+plt.scatter(df_2000['Population'],df_2000['Co2 Total'], c=labels, s=50)
 plt.scatter(cen[:, 0], cen[:, 1], s=200, c='black')
 # colour map Accent selected to increase contrast between colours
 plt.colorbar()
@@ -371,20 +371,20 @@ plt.show()
 #Lets analyse each of the clusters for both years 
 #Plotting a figure to understand statistics assoicated with each clusters particularly around full time and away and home goals. 
 fig,ax=plt.subplots(1,3,figsize=(12,5))
-sns.heatmap(df_1960.loc[df_1960_org.Cluster==0,['Population', 'Urban growth']].describe().round(),annot=True,fmt='g',ax=ax[0])
+sns.heatmap(df_1960.loc[df_1960.Cluster==0,['Population', 'Co2 Total']].describe().round(),annot=True,fmt='g',ax=ax[0])
 ax[0].set_title("Cluster-0")
-sns.heatmap(df_1960.loc[df_1960_org.Cluster==1,['Population', 'Urban growth']].describe().round(),annot=True,fmt='g',ax=ax[1])
+sns.heatmap(df_1960.loc[df_1960.Cluster==1,['Population', 'Co2 Total']].describe().round(),annot=True,fmt='g',ax=ax[1])
 ax[1].set_title("Cluster-1")
-sns.heatmap(df_1960.loc[df_1960_org.Cluster==2,['Population', 'Urban growth']].describe().round(),annot=True,fmt='g',ax=ax[2])
+sns.heatmap(df_1960.loc[df_1960.Cluster==2,['Population', 'Co2 Total']].describe().round(),annot=True,fmt='g',ax=ax[2])
 ax[2].set_title("Cluster-2")
 plt.suptitle("Cluster Analysis | 1960")
 plt.show()
 fig,ax=plt.subplots(1,3,figsize=(12,5))
-sns.heatmap(df_2000.loc[df_2000_org.Cluster==0,['Population', 'Urban growth']].describe().round(),annot=True,fmt='g',ax=ax[0])
+sns.heatmap(df_2000.loc[df_2000.Cluster==0,['Population', 'Co2 Total']].describe().round(),annot=True,fmt='g',ax=ax[0])
 ax[0].set_title("Cluster-0")
-sns.heatmap(df_2000.loc[df_2000_org.Cluster==1,['Population', 'Urban growth']].describe().round(),annot=True,fmt='g',ax=ax[1])
+sns.heatmap(df_2000.loc[df_2000.Cluster==1,['Population', 'Co2 Total']].describe().round(),annot=True,fmt='g',ax=ax[1])
 ax[1].set_title("Cluster-1")
-sns.heatmap(df_2000.loc[df_2000_org.Cluster==2,['Population', 'Urban growth']].describe().round(),annot=True,fmt='g',ax=ax[2])
+sns.heatmap(df_2000.loc[df_2000.Cluster==2,['Population', 'Co2 Total']].describe().round(),annot=True,fmt='g',ax=ax[2])
 ax[2].set_title("Cluster-2")
 plt.suptitle("Cluster Analysis | 2000")
 plt.show()
@@ -472,6 +472,3 @@ plt.title("Improved start value")
 plt.show()
 
 # =============================================================================
-
-
-
